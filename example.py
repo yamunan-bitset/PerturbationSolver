@@ -4,10 +4,9 @@ import sympy as sp
 
 x = sp.Symbol("x")
 e = sp.Symbol("epsilon")
-lhs = x**5 + x
-plhs = e*x**5 + x**7
-s = PSolver(x, e, lhs, plhs, 3)
+plhs = x**5 + taylor(sp.exp(x), 0, 3) + x - e
+s = PPolySolver(x, e, plhs, 3)
 print(s)
-s.print_perturbed()
 s.print_inf_series(expanded=True)
 pprint(s.solve())
+pprint(s.coeffs_inf)

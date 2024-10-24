@@ -5,9 +5,12 @@ def pprint(x):
     print()
     sp.pprint(x)
 
-class PSolver:
-    def __init__(self, x, e, LHS, perturbed_LHS, power_of_epsilon):
-        self.LHS = LHS # RHS is always = 1.
+def taylor(f, x0, n_iter):
+    t_exp = f # TODO: create function to return taylor expansion of f
+    return t_exp
+
+class PPolySolver:
+    def __init__(self, x, e, perturbed_LHS, power_of_epsilon):
         self.x = x
         self.e = e
         self.pLHS = perturbed_LHS
@@ -25,7 +28,7 @@ class PSolver:
             if j == 0:
                 eq.append(sp.Eq(eqnL.coeff(self.e, j), 1))
                 if eq == [False]:
-                    print("Unable to find perturbation. No constant term in perturbed LHS!")
+                    print("Unable to find perturbation. Try changin perturbed LHS")
                     exit(-1)
             else:
                 eq.append(sp.Eq(eq_sL[j - 1], 0))
@@ -36,6 +39,9 @@ class PSolver:
                     tmpL = tmpL.subs(self.a[k], self.coeffs_inf["a" + str(k)].args[0])
                 except KeyError:
                     pass
+                except IndexError:
+                    print("Unable to find perturbation. Try changin perturbed LHS")
+                    exit(-1)
             eq_sL.append(tmpL)
 
             self.inf_sol = self.inf_sol.doit().subs(self.a[j], self.coeffs_inf["a" + str(j)].args[0])
@@ -45,15 +51,12 @@ class PSolver:
         return self.sol_poly
 
     def __repr__(self):
-        pprint(sp.Eq(self.LHS, 1))
+        pprint(sp.Eq(self.pLHS, 1))
         return ""
 
     def __str__(self):
-        pprint(sp.Eq(self.LHS, 1))
-        return ""
-    
-    def print_perturbed(self):
         pprint(sp.Eq(self.pLHS, 1))
+        return ""
     
     def print_inf_series(self, expanded=False):
         if not expanded: 
