@@ -6,6 +6,15 @@ def pprint(x):
     print()
     sp.pprint(x)
 
+def taylor(pLHS, x, pot):
+    # compute taylor expansion symbolically 
+    i = 0
+    taylor_exp = sp.Integer(0)
+    while i <= pot:
+        taylor_exp = taylor_exp + (sp.diff(pLHS, x, i).subs(x, 0))/(sp.factorial(i))*(x-0)**i
+        i += 1
+    return taylor_exp
+
 class PPolySolver:
     def __init__(self, x, e, perturbed_LHS, power_of_epsilon):
         self.x = x
@@ -25,7 +34,7 @@ class PPolySolver:
             if j == 0:
                 eq.append(sp.Eq(eqnL.coeff(self.e, j), 1))
                 if eq == [False]:
-                    print("Unable to find perturbation. Try changin perturbed LHS")
+                    print("Unable to find perturbation. Try changing perturbed LHS")
                     exit(-1)
             else:
                 eq.append(sp.Eq(eq_sL[j - 1], 0))
@@ -37,7 +46,7 @@ class PPolySolver:
                 except KeyError:
                     pass
                 except IndexError:
-                    print("Unable to find perturbation. Try changin perturbed LHS")
+                    print("Unable to find perturbation. Try changing perturbed LHS")
                     exit(-1)
             eq_sL.append(tmpL)
 
@@ -63,21 +72,9 @@ class PPolySolver:
 
 class PTranscendentalSolver(PPolySolver):
     def __init__(self, x, e, perturbed_LHS, power_of_epsilon, power_of_taylor):
-        self.x = x
-        self.e = e
-        self.pLHS = perturbed_LHS
-        self.a = sp.IndexedBase(sp.Symbol("a"))
-        self.poe = power_of_epsilon
-        self.inf_series = sp.Sum(self.a[n]*self.e**n, (n, 0, self.poe))
-        self.coeffs_inf = {}
+        PPolySolver.__init__(self, x, e, perturbed_LHS, power_of_epsilon)
         self.power_of_taylor = power_of_taylor
         self.pLHS = self.convert_taylor()
     
     def convert_taylor(self):
-        # compute taylor expansion symbolically 
-        i = 0
-        taylor_exp = sp.Integer(0)
-        while i <= self.power_of_taylor:
-            taylor_exp = taylor_exp + (sp.diff(self.pLHS, self.x, i).subs(self.x, 0))/(sp.factorial(i))*(self.x-0)**i
-            i += 1
-        return taylor_exp
+        return taylor(self.pLHS, self.x, self.power_of_taylor)
