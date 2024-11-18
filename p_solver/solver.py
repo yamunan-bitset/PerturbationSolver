@@ -1,13 +1,10 @@
 import sympy as sp
+from inspect import getsource
 from sympy.abc import n
 
 def pprint(x):
     print()
     sp.pprint(x)
-
-def taylor(f, x0, n_iter):
-    t_exp = f # TODO: create function to return taylor expansion of f
-    return t_exp
 
 class PPolySolver:
     def __init__(self, x, e, perturbed_LHS, power_of_epsilon):
@@ -63,3 +60,24 @@ class PPolySolver:
             pprint(sp.Eq(self.x, self.inf_series))
         else: 
             pprint(sp.Eq(self.x, self.inf_series.doit().expand()))
+
+class PTranscendentalSolver(PPolySolver):
+    def __init__(self, x, e, perturbed_LHS, power_of_epsilon, power_of_taylor):
+        self.x = x
+        self.e = e
+        self.pLHS = perturbed_LHS
+        self.a = sp.IndexedBase(sp.Symbol("a"))
+        self.poe = power_of_epsilon
+        self.inf_series = sp.Sum(self.a[n]*self.e**n, (n, 0, self.poe))
+        self.coeffs_inf = {}
+        self.power_of_taylor = power_of_taylor
+        self.pLHS = self.convert_taylor()
+    
+    def convert_taylor(self):
+        # compute taylor expansion symbolically 
+        i = 0
+        taylor_exp = sp.Integer(0)
+        while i <= self.power_of_taylor:
+            taylor_exp = taylor_exp + (sp.diff(self.pLHS, self.x, i).subs(self.x, 0))/(sp.factorial(i))*(self.x-0)**i
+            i += 1
+        return taylor_exp
